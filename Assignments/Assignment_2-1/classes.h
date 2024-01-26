@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 #include <bitset>
+#include <cstdio>
+#include <fstream>
 using namespace std;
 
 class Record {
@@ -56,18 +58,48 @@ public:
     StorageBufferManager(string NewFileName) {
         
         //initialize your variables
-        char buffer[100];
+        char buffer[BLOCK_SIZE];
         FILE *file_ = fopen(NewFileName.c_str(), "w+");
+        fputs("ID,NAME,BIO,MANAGER_ID\n", file_); 
 
 
         // Create your EmployeeRelation file 
 
         fclose(file_);
+
     }
 
     // Read csv file (Employee.csv) and add records to the (EmployeeRelation)
     void createFromFile(string csvFName) {
-        
+        FILE *file = fopen(csvFName.c_str(), "r");
+        if (file == NULL) {
+            perror("Error opening file");
+            exit(1);
+        }
+
+        vector<std::string> fields;
+        char buffer[BLOCK_SIZE];
+        while (fgets(buffer, BLOCK_SIZE, file)) {
+            char* token = strtok(buffer, ",");
+            // Store id, name. bio. manager_id
+            fields.push_back(token);
+            token = strtok(NULL, ",");
+            fields.push_back(token);
+            token = strtok(NULL, ",");
+            fields.push_back(token);
+            token = strtok(NULL, ",");
+            fields.push_back(token);
+
+            // Create record
+            Record record(fields);
+            insertRecord(record);
+            numRecords++;
+
+            // Clear buffer and fields
+            memset(buffer, 0, BLOCK_SIZE);
+            fields.clear();
+        }
+        fclose(file);
     }
 
     // Given an ID, find the relevant record and print it
