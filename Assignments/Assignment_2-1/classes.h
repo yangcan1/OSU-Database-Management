@@ -24,7 +24,7 @@ public:
         cout << "\tID: " << id << "\n";
         cout << "\tNAME: " << name << "\n";
         cout << "\tBIO: " << bio << "\n";
-        cout << "\tMANAGER_ID: " << manager_id << "\n";
+        cout << "\tMANAGER_ID: " << manager_id << "\n\n";
     }
 };
 
@@ -59,11 +59,10 @@ public:
         
         //initialize your variables
         char buffer[BLOCK_SIZE];
-        FILE *file_ = fopen(NewFileName.c_str(), "w+");
-        fputs("ID,NAME,BIO,MANAGER_ID\n", file_); 
-
 
         // Create your EmployeeRelation file 
+        FILE *file_ = fopen(NewFileName.c_str(), "w+");
+        fputs("ID,NAME,BIO,MANAGER_ID\n", file_); 
 
         fclose(file_);
 
@@ -92,8 +91,8 @@ public:
 
             // Create record
             Record record(fields);
-            insertRecord(record);
             numRecords++;
+            insertRecord(record);
 
             // Clear buffer and fields
             memset(buffer, 0, BLOCK_SIZE);
