@@ -32,77 +32,73 @@ public:
 class StorageBufferManager {
 
 private:
-    
+    // Variables:
     const int BLOCK_SIZE = 4096; // initialize the  block size allowed in main memory according to the question 
-
-    // You may declare variables based on your need 
+    const int MAX_MEMORY_SIZE = 4096 * 3; // Three pages maximum in main memory 
+    int rec_size = 0;
+    string fileName;
+    vector<Record> blocks;
     int numRecords = 0;
 
-    // Insert new record 
     void insertRecord(Record record) {
-
-        // No records written yet
-        if (numRecords == 0) {
-            // Initialize first block
-
+        // cout << rec_size << endl;
+        if (rec_size < BLOCK_SIZE) {
+            // Write record to file
+            blocks.push_back(record);
+            numRecords ++;
+            FILE *file_ = fopen(fileName.c_str(), "a+");
+            fprintf(file_, "%d,%s,%s,%d$", record.id, record.name.c_str(), record.bio.c_str(), record.manager_id);
+            fclose(file_);
         }
-        // Add record to the block
-
-
-        // Take neccessary steps if capacity is reached (you've utilized all the blocks in main memory)
-
-
     }
- 
+
 public:
     StorageBufferManager(string NewFileName) {
-        
-        //initialize your variables
-        char buffer[BLOCK_SIZE];
+        fileName = NewFileName;
 
-        // Create your EmployeeRelation file 
         FILE *file_ = fopen(NewFileName.c_str(), "w+");
-        fputs("ID,NAME,BIO,MANAGER_ID\n", file_); 
-
         fclose(file_);
 
     }
 
     // Read csv file (Employee.csv) and add records to the (EmployeeRelation)
     void createFromFile(string csvFName) {
+        vector<std::string> fields;
+        char buffer[BLOCK_SIZE];
+
         FILE *file = fopen(csvFName.c_str(), "r");
         if (file == NULL) {
             perror("Error opening file");
             exit(1);
         }
 
-        vector<std::string> fields;
-        char buffer[BLOCK_SIZE];
         while (fgets(buffer, BLOCK_SIZE, file)) {
+            // get fields from Employee.csv
             char* token = strtok(buffer, ",");
-            // Store id, name. bio. manager_id
-            fields.push_back(token);
-            token = strtok(NULL, ",");
-            fields.push_back(token);
-            token = strtok(NULL, ",");
-            fields.push_back(token);
-            token = strtok(NULL, ",");
-            fields.push_back(token);
+            while (token) {
+                fields.push_back(token);
+                token = strtok(NULL, ",");
+            }
 
             // Create record
             Record record(fields);
-            numRecords++;
+            // record.print();
             insertRecord(record);
+            numRecords ++;
+            rec_size += 8 + 8 + sizeof(record.name) + sizeof(record.bio);
 
             // Clear buffer and fields
             memset(buffer, 0, BLOCK_SIZE);
             fields.clear();
         }
+
         fclose(file);
     }
 
     // Given an ID, find the relevant record and print it
     Record findRecordById(int id) {
-        
-    }
+        cout << id+1 << endl;
+        Record record = Record({"0", "0", "0", "0"});
+        return record;
+        }
 };

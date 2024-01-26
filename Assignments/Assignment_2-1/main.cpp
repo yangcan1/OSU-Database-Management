@@ -16,12 +16,24 @@ Skeleton code for storage and buffer management
 using namespace std;
 
 int main(int argc, char* const argv[]) {
-
+    int quitOrNot = 1;
+    int lookupID;
     // Create the EmployeeRelation file from Employee.csv
     StorageBufferManager manager("EmployeeRelation");
     manager.createFromFile("Employee.csv");
     
     // Loop to lookup IDs until user is ready to quit
+    
+    while (quitOrNot == 1) {
+        cout << "Please enter an ID to look up: ";
+        cin >> lookupID;
+        manager.findRecordById(lookupID);
+        cout << "\nDo you want to look up for another ID? (1 for yes, 0 for no): ";
+        cin >> quitOrNot;
+        if (quitOrNot == 0) {
+            cout << "Goodbye!";
+        }
+    }
     
 
     return 0;
