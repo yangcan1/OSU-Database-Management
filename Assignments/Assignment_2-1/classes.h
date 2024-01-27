@@ -45,18 +45,16 @@ private:
         // if record size can be added to main memory:
         if (memory_size + rec_size <= MAX_MEMORY_SIZE) {
             memory_size += rec_size;
-            // cout << memory_size << endl;
             blocks.push_back(record);
         } 
         // If record size is overload:
         if (numRecords == 50 || memory_size + rec_size > MAX_MEMORY_SIZE) {
-            // cout << "Hello world" << endl;
-            // blocks[1].print();
 
             FILE *file_ = fopen(fileName.c_str(), "a+");
             for (int i = 0; i < blocks.size(); i++) {
                 fprintf(file_, "%d,%s,%s,%d$", blocks[i].id, blocks[i].name.c_str(), blocks[i].bio.c_str(), blocks[i].manager_id);
             }
+            fprintf(file_, "\n");
             blocks.clear();
             memory_size = 0;
             fclose(file_);
