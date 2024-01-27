@@ -36,20 +36,32 @@ private:
     const int BLOCK_SIZE = 4096; // initialize the  block size allowed in main memory according to the question 
     const int MAX_MEMORY_SIZE = 4096 * 3; // Three pages maximum in main memory 
     int rec_size = 0;
+    int memory_size = 0;
+    int numRecords = 0;
     string fileName;
     vector<Record> blocks;
-    int numRecords = 0;
 
     void insertRecord(Record record) {
-        // cout << rec_size << endl;
-        if (rec_size < BLOCK_SIZE) {
-            // Write record to file
+        // if record size can be added to main memory:
+        if (memory_size + rec_size <= MAX_MEMORY_SIZE) {
+            memory_size += rec_size;
+            // cout << memory_size << endl;
             blocks.push_back(record);
-            numRecords ++;
+        } 
+        // If record size is overload:
+        if (numRecords == 50 || memory_size + rec_size > MAX_MEMORY_SIZE) {
+            // cout << "Hello world" << endl;
+            // blocks[1].print();
+
             FILE *file_ = fopen(fileName.c_str(), "a+");
-            fprintf(file_, "%d,%s,%s,%d$", record.id, record.name.c_str(), record.bio.c_str(), record.manager_id);
+            for (int i = 0; i < blocks.size(); i++) {
+                fprintf(file_, "%d,%s,%s,%d$", blocks[i].id, blocks[i].name.c_str(), blocks[i].bio.c_str(), blocks[i].manager_id);
+            }
+            blocks.clear();
+            memory_size = 0;
             fclose(file_);
         }
+
     }
 
 public:
@@ -82,10 +94,10 @@ public:
 
             // Create record
             Record record(fields);
-            // record.print();
-            insertRecord(record);
+            rec_size = 8 + 8 + record.name.size() + record.bio.size();
             numRecords ++;
-            rec_size += 8 + 8 + sizeof(record.name) + sizeof(record.bio);
+            insertRecord(record);
+
 
             // Clear buffer and fields
             memset(buffer, 0, BLOCK_SIZE);
