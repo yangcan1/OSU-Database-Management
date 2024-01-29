@@ -27,11 +27,12 @@ int main(int argc, char* const argv[]) {
     while (quitOrNot == 1) {
         cout << "Please enter an ID to look up: ";
         cin >> lookupID;
-        manager.findRecordById(lookupID);
+        Record record = manager.findRecordById(lookupID);
+        record.print();
         cout << "\nDo you want to look up for another ID? (1 for yes, 0 for no): ";
         cin >> quitOrNot;
         if (quitOrNot == 0) {
-            cout << "Goodbye!";
+            cout << "Thank you, goodbye!";
         }
     }
     

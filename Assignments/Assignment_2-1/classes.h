@@ -39,27 +39,13 @@ private:
     int memory_size = 0;
     int numRecords = 0;
     string fileName;
-    vector<Record> blocks;
 
     void insertRecord(Record record) {
-        // if record size can be added to main memory:
-        if (memory_size + rec_size <= MAX_MEMORY_SIZE) {
-            memory_size += rec_size;
-            blocks.push_back(record);
-        } 
-        // If record size is overload:
-        if (numRecords == 50 || memory_size + rec_size > MAX_MEMORY_SIZE) {
-
+        if (rec_size < MAX_MEMORY_SIZE) {
             FILE *file_ = fopen(fileName.c_str(), "a+");
-            for (int i = 0; i < blocks.size(); i++) {
-                fprintf(file_, "%d,%s,%s,%d$", blocks[i].id, blocks[i].name.c_str(), blocks[i].bio.c_str(), blocks[i].manager_id);
-            }
-            fprintf(file_, "\n");
-            blocks.clear();
-            memory_size = 0;
+            fprintf(file_, "%d,%s,%s,%d,\n", record.id, record.name.c_str(), record.bio.c_str(), record.manager_id);
             fclose(file_);
         }
-
     }
 
 public:
@@ -96,7 +82,6 @@ public:
             numRecords ++;
             insertRecord(record);
 
-
             // Clear buffer and fields
             memset(buffer, 0, BLOCK_SIZE);
             fields.clear();
@@ -107,8 +92,31 @@ public:
 
     // Given an ID, find the relevant record and print it
     Record findRecordById(int id) {
-        cout << id+1 << endl;
-        Record record = Record({"0", "0", "0", "0"});
-        return record;
+        vector<std::string> fields;
+        char buffer[MAX_MEMORY_SIZE];
+
+        FILE *file_ = fopen(fileName.c_str(), "r");
+        if (file_ == NULL) {
+            perror("Error opening file");
+            exit(1);
         }
+
+        char *token;
+        while (fgets(buffer, MAX_MEMORY_SIZE, file_)) {
+            // cout << buffer << endl;
+            // get fields from EmployeeRelation
+            char* token = strtok(buffer, ",");
+            if (stoi(token) == id) {
+                while (token) {
+                    fields.push_back(token);
+                    token = strtok(NULL, ",");
+                }
+                break;
+            }
+            memset(buffer, 0, MAX_MEMORY_SIZE);
+        }
+        // cout << fields.size() << endl;
+        fclose(file_);
+        return Record(fields);
+    }
 };
