@@ -24,7 +24,7 @@ public:
         cout << "\tID: " << id << "\n";
         cout << "\tNAME: " << name << "\n";
         cout << "\tBIO: " << bio << "\n";
-        cout << "\tMANAGER_ID: " << manager_id << "\n\n";
+        cout << "\tMANAGER_ID: " << manager_id << "\n";
     }
 };
 
@@ -43,7 +43,7 @@ private:
     void insertRecord(Record record) {
         if (rec_size < MAX_MEMORY_SIZE) {
             FILE *file_ = fopen(fileName.c_str(), "a+");
-            fprintf(file_, "%d,%s,%s,%d,\n", record.id, record.name.c_str(), record.bio.c_str(), record.manager_id);
+            fprintf(file_, "%d,%s,%s,%d$\n", record.id, record.name.c_str(), record.bio.c_str(), record.manager_id);
             fclose(file_);
         }
     }
@@ -116,6 +116,7 @@ public:
             memset(buffer, 0, MAX_MEMORY_SIZE);
         }
         // cout << fields.size() << endl;
+        // cout << fields[0].length() << endl;
         fclose(file_);
         return Record(fields);
     }
