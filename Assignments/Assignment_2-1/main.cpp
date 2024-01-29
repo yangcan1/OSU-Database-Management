@@ -32,7 +32,7 @@ int main(int argc, char* const argv[]) {
         cout << "\nDo you want to look up for another ID? (1 for yes, 0 for no): ";
         cin >> quitOrNot;
         if (quitOrNot == 0) {
-            cout << "Thank you, goodbye!";
+            cout << "Thank you, goodbye!\n";
         }
     }
     
