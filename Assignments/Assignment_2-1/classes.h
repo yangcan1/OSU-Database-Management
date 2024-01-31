@@ -39,11 +39,24 @@ private:
     int memory_size = 0;
     int numRecords = 0;
     string fileName;
+    vector<Record> blocks;
+    int i = 1, d = 1;
 
     void insertRecord(Record record) {
-        if (rec_size < MAX_MEMORY_SIZE) {
+        if (memory_size + rec_size <= MAX_MEMORY_SIZE) {
+            // if record size can be added to main memory:
+            memory_size += rec_size;
+            blocks.push_back(record);
+        } 
+        if (numRecords == 50 || memory_size + rec_size > MAX_MEMORY_SIZE) {
+            // If record size is overload:
             FILE *file_ = fopen(fileName.c_str(), "a+");
-            fprintf(file_, "%d,%s,%s,%d$\n", record.id, record.name.c_str(), record.bio.c_str(), record.manager_id);
+            for (int i = 0; i < blocks.size(); i++) {
+                fprintf(file_, "%d$%s$%s$%d$", blocks[i].id, blocks[i].name.c_str(), blocks[i].bio.c_str(), blocks[i].manager_id);
+            }
+            fprintf(file_, "\n");
+            blocks.clear();
+            memory_size = 0;
             fclose(file_);
         }
     }
@@ -67,7 +80,6 @@ public:
             perror("Error opening file");
             exit(1);
         }
-
         while (fgets(buffer, BLOCK_SIZE, file)) {
             // get fields from Employee.csv
             char* token = strtok(buffer, ",");
@@ -78,7 +90,7 @@ public:
 
             // Create record
             Record record(fields);
-            rec_size = 8 + 8 + record.name.size() + record.bio.size();
+            rec_size = 8 + 8 + record.name.size() + record.bio.size() + 4 + 1; // 4 is size of $ sign, and 1 is NULL terminator
             numRecords ++;
             insertRecord(record);
 
@@ -94,6 +106,7 @@ public:
     Record findRecordById(int id) {
         vector<std::string> fields;
         char buffer[MAX_MEMORY_SIZE];
+        bool flag_exit = 0;
 
         FILE *file_ = fopen(fileName.c_str(), "r");
         if (file_ == NULL) {
@@ -101,17 +114,33 @@ public:
             exit(1);
         }
 
-        char *token;
-        while (fgets(buffer, MAX_MEMORY_SIZE, file_)) {
+        char *token0;;
+        while (flag_exit == 0 && fgets(buffer, MAX_MEMORY_SIZE, file_)) {
             // cout << buffer << endl;
             // get fields from EmployeeRelation
-            char* token = strtok(buffer, ",");
-            if (stoi(token) == id) {
-                while (token) {
-                    fields.push_back(token);
-                    token = strtok(NULL, ",");
+            token0 = strtok(buffer, "$");
+            while (token0) {
+                // cout << "current id: " << token0 << endl;
+                if (atoi(token0) == id) {
+                    // cout << "found id: " << token0 << endl;
+                    // collect and push token0 to fields
+                    for (int i = 0; i < 4; i++) {
+                        fields.push_back(token0);
+                        token0 = strtok(NULL, "$");
+                    }
+                    Record record(fields);
+                    flag_exit = 1;
+                    break;
                 }
-                break;
+                else {
+                    // continue check after passing next three $;
+                    for (int i = 0; i < 4; i++) {
+                        token0 = strtok(NULL, "$");
+                    }
+                }
+                // cout << "check1" << endl;
+
+
             }
             memset(buffer, 0, MAX_MEMORY_SIZE);
         }

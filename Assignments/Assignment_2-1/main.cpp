@@ -28,6 +28,7 @@ int main(int argc, char* const argv[]) {
         cout << "Please enter an ID to look up: ";
         cin >> lookupID;
         Record record = manager.findRecordById(lookupID);
+        cout << endl;
         record.print();
         cout << "\nDo you want to look up for another ID? (1 for yes, 0 for no): ";
         cin >> quitOrNot;
