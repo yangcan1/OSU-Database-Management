@@ -64,10 +64,8 @@ private:
 public:
     StorageBufferManager(string NewFileName) {
         fileName = NewFileName;
-
         FILE *file_ = fopen(NewFileName.c_str(), "w+");
         fclose(file_);
-
     }
 
     // Read csv file (Employee.csv) and add records to the (EmployeeRelation)
@@ -116,13 +114,10 @@ public:
 
         char *token0;;
         while (flag_exit == 0 && fgets(buffer, MAX_MEMORY_SIZE, file_)) {
-            // cout << buffer << endl;
             // get fields from EmployeeRelation
             token0 = strtok(buffer, "$");
             while (token0) {
-                // cout << "current id: " << token0 << endl;
                 if (atoi(token0) == id) {
-                    // cout << "found id: " << token0 << endl;
                     // collect and push token0 to fields
                     for (int i = 0; i < 4; i++) {
                         fields.push_back(token0);
@@ -138,14 +133,9 @@ public:
                         token0 = strtok(NULL, "$");
                     }
                 }
-                // cout << "check1" << endl;
-
-
             }
             memset(buffer, 0, MAX_MEMORY_SIZE);
         }
-        // cout << fields.size() << endl;
-        // cout << fields[0].length() << endl;
         fclose(file_);
         return Record(fields);
     }
