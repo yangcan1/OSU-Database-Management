@@ -45,31 +45,76 @@ private:
     int nextFreeBlock; // Next place to write a bucket. Should increment it by BLOCK_SIZE whenever a bucket is written to EmployeeIndex
     string fName;      // Name of index file
 
-    // Insert new record into index
-    void writeRecord(Record record, int block) {
-        // Write record to block
-        // Update blockDirectory
-        // Update currentSize
-        // Update nextFreeBlock
+    int h(int id) {
+        int hash_value = id % 216;
+        return hash_value;
+    }
+
+    int last_i_bits(int i, int hash_value) {
+        int bits = hash_value % ((int)pow(2, i));
+        cout << "----hash value: " << hash_value << "\nbits: " << bits << endl;
+        return (bits);
+    }
+
+    void writeRecord(Record record, int lastBits, vector<int> blockDirectory, int rec_size) {
+
+        // testing if there is existing records on that page
+        char buffer[BLOCK_SIZE];
+        memset(buffer, '\0', sizeof(buffer)); // Initialize buffer to empty
+
+        fstream file_;
+        file_.open(fName, ios::in | ios::out | ios::binary);
+        file_.seekg(blockDirectory[lastBits], ios::beg);
+        file_.read(buffer, BLOCK_SIZE);
+        cout << "\nbuffer after reading: " << buffer << endl;
+        file_.close();
+        int buffer_length = strlen(buffer);
+        std::cout << "length of buffer: " << buffer_length << std::endl;
+        if (strlen(buffer) == 0) {
+            cout << "\nbuffer is empty meaning so we're writing record into buffer:--" << endl;
+            // write record in offeset blockDirectory[lastBits]
+            fstream file;
+            file.open(fName, ios::in | ios::out | ios::binary);
+            file.seekp(blockDirectory[lastBits], ios::beg);
+            file << record.id << "$" << record.name << "$" << record.bio << "$" << record.manager_id << "$";
+            file.close();
+            cout << "\nwriting record completed, name: " << record.name <<endl;
+            memset(buffer, '\0', sizeof(buffer));
+        }
+        else {
+            // buffer has something, we will insert the record behind it if ther's enough space
+            if (buffer_length + rec_size < BLOCK_SIZE) {
+                cout << "\n rec_size: " << rec_size << endl;
+                fstream file;
+                file.open(fName, ios::in | ios::out | ios::binary);
+                file.seekp(blockDirectory[lastBits] + buffer_length, ios::beg);
+                file << record.id << "$" << record.name << "$" << record.bio << "$" << record.manager_id << "$";
+                file.close();
+                cout << "\nBuffer ISN't empty, but luckly. writing record completed, name: " << record.name <<endl;
+                memset(buffer, '\0', sizeof(buffer));
+            } else {
+                cout << "\nSorry we cannot fit this record, name: " << record.name <<endl;
+                
+            }
+        }
     }
 
     void insertRecord(Record record) {
+        // Get the hash value and the last i bits
+        int hash_value = h(record.id);
+        int lastBits = last_i_bits(i, hash_value);
 
-        // No records written to index yet
-        if (rec_size + currentSize > BLOCK_SIZE) {
-            // Need to increase n
-            // Need to increase i
-            // Need to create new bucket
-            // Need to rehash records
+        // if bucket is avaliable, write record to bucket
+        cout << "insert loop count: "<< endl;
+        if (lastBits <= n) {
+            cout << "lastBits<= n counts: "<< endl;
+
+            writeRecord(record, lastBits, blockDirectory, rec_size);
+        } 
+        else {
+            // flip bits and write record to bucket
+
         }
-
-        // Add record to the index in the correct block, creating a overflow block if necessary
-
-
-        // Take neccessary steps if capacity is reached:
-		// increase n; increase i (if necessary); place records in the new bucket that may have been originally misplaced due to a bit flip
-
-
     }
 
 public:
@@ -83,7 +128,12 @@ public:
         fName = indexFileName;
         blockDirectory.resize(256, -1); // Initialize all values to -1, indicating that the bucket has not been written to yet
         // Create your EmployeeIndex file and write out the initial 4 buckets
-        // make sure to account for the created buckets by incrementing nextFreeBlock appropriately
+        blockDirectory[0] = 0 * BLOCK_SIZE;
+        blockDirectory[1] = 1 * BLOCK_SIZE;
+        blockDirectory[2] = 2 * BLOCK_SIZE;
+        blockDirectory[3] = 3 * BLOCK_SIZE;
+        ofstream file(indexFileName);
+        file.close();
       
     }
 
@@ -103,9 +153,8 @@ public:
                 fields.push_back(field);
             }
             Record record(fields);
-            record.print();
             numRecords++;
-            rec_size = sizeof(record);
+            rec_size = 8 + 8 + record.name.size() + record.bio.size() + 5;
             insertRecord(record);
         }
         
