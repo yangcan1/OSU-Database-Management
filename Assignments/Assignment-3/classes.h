@@ -52,12 +52,11 @@ private:
 
     int last_i_bits(int i, int hash_value) {
         int bits = hash_value % ((int)pow(2, i));
-        cout << "----hash value: " << hash_value << "\nbits: " << bits << endl;
+        // cout << "----hash value: " << hash_value << "\nbits: " << bits << endl;
         return (bits);
     }
 
     void writeRecord(Record record, int lastBits, vector<int> blockDirectory, int rec_size) {
-
         // testing if there is existing records on that page
         char buffer[BLOCK_SIZE];
         memset(buffer, '\0', sizeof(buffer)); // Initialize buffer to empty
@@ -69,14 +68,13 @@ private:
         cout << "\nbuffer after reading: " << buffer << endl;
         file_.close();
         int buffer_length = strlen(buffer);
-        std::cout << "length of buffer: " << buffer_length << std::endl;
-        if (strlen(buffer) == 0) {
+        if (buffer_length == 0) {
             cout << "\nbuffer is empty meaning so we're writing record into buffer:--" << endl;
             // write record in offeset blockDirectory[lastBits]
             fstream file;
             file.open(fName, ios::in | ios::out | ios::binary);
             file.seekp(blockDirectory[lastBits], ios::beg);
-            file << record.id << "$" << record.name << "$" << record.bio << "$" << record.manager_id << "$";
+            file << record.id << "$" << record.name << "$" << record.bio << "$" << record.manager_id << "#";
             file.close();
             cout << "\nwriting record completed, name: " << record.name <<endl;
             memset(buffer, '\0', sizeof(buffer));
@@ -88,13 +86,30 @@ private:
                 fstream file;
                 file.open(fName, ios::in | ios::out | ios::binary);
                 file.seekp(blockDirectory[lastBits] + buffer_length, ios::beg);
-                file << record.id << "$" << record.name << "$" << record.bio << "$" << record.manager_id << "$";
+                file << record.id << "$" << record.name << "$" << record.bio << "$" << record.manager_id << "#";
                 file.close();
                 cout << "\nBuffer ISN't empty, but luckly. writing record completed, name: " << record.name <<endl;
                 memset(buffer, '\0', sizeof(buffer));
             } else {
-                cout << "\nSorry we cannot fit this record, name: " << record.name <<endl;
-                
+                cout << "hello world" << endl;
+                // write to overflow
+                cout << "\nput record in overflow buffer: " << record.name << endl;
+                char of_buffer[BLOCK_SIZE*3];
+                memset(of_buffer, '\0', sizeof(of_buffer)); // Initialize buffer to empty
+
+                fstream file_;
+                file_.open(fName, ios::in | ios::out | ios::binary);
+                file_.seekg(blockDirectory[4] , ios::beg);
+                file_.read(of_buffer, BLOCK_SIZE*3);
+                file_.close();
+                int of_buffer_length = strlen(of_buffer);
+
+                file_.open(fName, ios::in | ios::out | ios::binary);
+                file_.seekp(blockDirectory[4]  + of_buffer_length, ios::beg);
+                std::string recordString = std::to_string(record.id) + "$" + record.name + "$" + record.bio + "$" + std::to_string(record.manager_id) + "#";
+                file_.write(recordString.c_str(), recordString.size());
+                file_.close();
+                memset(of_buffer, '\0', sizeof(of_buffer));
             }
         }
     }
@@ -107,14 +122,43 @@ private:
         // if bucket is avaliable, write record to bucket
         cout << "insert loop count: "<< endl;
         if (lastBits <= n) {
-            cout << "lastBits<= n counts: "<< endl;
-
             writeRecord(record, lastBits, blockDirectory, rec_size);
         } 
         else {
             // flip bits and write record to bucket
-
+            lastBits = lastBits - pow(2, i-1);
+            writeRecord(record, lastBits, blockDirectory, rec_size);
         }
+    }
+
+    void expendCapacity(int numRecords, int n, int i, vector<int> blockDirectory) {
+        if ((numRecords / (n * 6)) > 0.7) {
+            n++;
+            if (n > pow(2, i)) {i++;}
+            // rehash
+            char buffer[BLOCK_SIZE];
+            memset(buffer, '\0', sizeof(buffer)); // Initialize buffer to empty
+
+            fstream file;
+            file.open(fName, ios::in | ios::out | ios::binary);
+            file.seekg(blockDirectory[n-4], ios::beg);
+            file.read(buffer, BLOCK_SIZE);
+            file.close();
+
+            char* recordTok = strtok(buffer, "#");
+            while (recordTok != NULL) {
+                cout << "\ntoken: " << recordTok << endl;
+                char* rehashID = strtok(recordTok, "$");
+                if (last_i_bits(i, atoi(rehashID)) != n-4) {
+                    cout << "record need to be rehashed: " << recordTok << endl;
+                }
+                recordTok = strtok(NULL, "#");
+            }
+        } else {
+            return;
+        }
+        return;
+
     }
 
 public:
@@ -128,13 +172,11 @@ public:
         fName = indexFileName;
         blockDirectory.resize(256, -1); // Initialize all values to -1, indicating that the bucket has not been written to yet
         // Create your EmployeeIndex file and write out the initial 4 buckets
-        blockDirectory[0] = 0 * BLOCK_SIZE;
-        blockDirectory[1] = 1 * BLOCK_SIZE;
-        blockDirectory[2] = 2 * BLOCK_SIZE;
-        blockDirectory[3] = 3 * BLOCK_SIZE;
+        for (int j = 0; j < 9; j++) {
+            blockDirectory[j] = j * BLOCK_SIZE;
+        }
         ofstream file(indexFileName);
         file.close();
-      
     }
 
     // Read csv file and add records to the index
@@ -154,14 +196,70 @@ public:
             }
             Record record(fields);
             numRecords++;
+            expendCapacity(numRecords, n, i, blockDirectory);
             rec_size = 8 + 8 + record.name.size() + record.bio.size() + 5;
             insertRecord(record);
         }
+        file.close();
+        fstream file_;
+        file_.open(fName, ios::in | ios::out | ios::binary);
+        file_.seekp(blockDirectory[1] -1, ios::beg);
+        file_ << "\n";
+        file_.seekp(blockDirectory[2] -1, ios::beg);
+        file_ << "\n";
+        file_.seekp(blockDirectory[3] -1, ios::beg);
+        file_ << "\n";
+        file_.seekp(blockDirectory[4] -1, ios::beg);
+        file_ << "\n";
+        file_.seekp(blockDirectory[4] +4099, ios::beg);
+        file_ << "\n";
+        file_.seekp(blockDirectory[5] +2457, ios::beg);
+        file_ << "\n";
+        file_.close();
         
+
     }
 
     // Given an ID, find the relevant record and print it
     Record findRecordById(int id) {
-        
+        vector<std::string> fields;
+        char buffer[BLOCK_SIZE];
+        bool flag_exit = 0;
+
+        FILE *file_ = fopen(fName.c_str(), "r");
+        if (file_ == NULL) {
+            perror("Error opening file");
+            exit(1);
+        }
+
+        char *token0;;
+        while (flag_exit == 0 && fgets(buffer, BLOCK_SIZE, file_)) {
+            // get fields from EmployeeRelation
+            token0 = strtok(buffer, "$#");
+            while (token0) {
+                if (atoi(token0) == id) {
+                    // collect and push token0 to fields
+                    for (int i = 0; i < 4; i++) {
+                        fields.push_back(token0);
+                        token0 = strtok(NULL, "$");
+                    }
+                    Record record (fields);
+                    return record;
+                    
+                    flag_exit = 1;
+                    break;
+                }
+                else {
+                    // continue check after passing next three $;
+                    for (int i = 0; i < 4; i++) {
+                        token0 = strtok(NULL, "$#");
+                    }
+                }
+            }
+            memset(buffer, 0, BLOCK_SIZE);
+        }
+        fclose(file_);
+        perror("Cannot find ID");
+        exit(1);
     }
 };
