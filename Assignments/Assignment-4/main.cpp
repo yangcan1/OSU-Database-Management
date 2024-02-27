@@ -1,33 +1,22 @@
 /* This is a skeleton code for External Memory Sorting, you can make modifications as long as you meet 
    all question requirements*/  
 
-#include <bits/stdc++.h>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <bitset>
+#include <fstream>
 #include "record_class.h"
+#include <algorithm>
 
 using namespace std;
-
-//defines how many blocks are available in the Main Memory 
 #define buffer_size 22
-
 Records buffers[buffer_size]; //use this class object of size 22 as your main memory
 
-/***You can change return type and arguments as you want.***/
+int run = 0;
+int flag = 0;
 
-//PASS 1
-//Sorting the buffers in main_memory and storing the sorted records into a temporary file (Runs) 
-void Sort_Buffer(){
-    //Remember: You can use only [AT MOST] 22 blocks for sorting the records / tuples and create the runs
-    return;
-}
-
-//PASS 2
-//Use main memory to Merge the Runs 
-//which are already sorted in 'runs' of the relation Emp.csv 
-void Merge_Runs(){
-
-    //and store the Sorted results of your Buffer using PrintSorted() 
-    return;
-}
 
 void PrintSorted(){
 
@@ -35,24 +24,65 @@ void PrintSorted(){
     return;
 }
 
-int main() {
+bool compareByID(const Records& a, const Records& b) {
+    return a.emp_record.eid < b.emp_record.eid;
+}
 
+//PASS 1
+//Sorting the buffers in main_memory and storing the sorted records into a temporary file (Runs) 
+void Sort_Buffer(Records buffers[buffer_size]){
+    sort(buffers, buffers + buffer_size, compareByID);
+    // for (int i = 0; i < buffer_size; i++) {
+    //     cout << "i: eID: " << i << ":" << buffers[i].emp_record.eid << "\n";
+    // }
+    string filename = "runs" + to_string(run) + ".txt";
+    ofstream runs;
+    runs.open(filename, ios::out | ios::app);
+    for (int i = 0; i < buffer_size; i++) {
+        runs << buffers[i].emp_record.eid << "," << buffers[i].emp_record.ename << "," << buffers[i].emp_record.age << "," << buffers[i].emp_record.salary << "\n";
+    }
+    runs.close();
+    
+    run++;
+
+    return;
+}
+
+//PASS 2
+//Use main memory to Merge the Runs 
+//which are already sorted in 'runs' of the relation Emp.csv 
+void Merge_Runs(){
+    // 
+    return;
+}
+
+
+int main() {
     //Open file streams to read and write
     //Opening out the Emp.csv relation that we want to Sort
     fstream empin;
+    string line;
+    int count = 0;
+
     empin.open("Emp.csv", ios::in);
-   
+    while (getline(empin, line))
+    {
+        Records records = Grab_Emp_Record(line);
+        buffers[count] = records;
+        flag++;
+        count++;
+        if (count == buffer_size || flag == 399){
+            Sort_Buffer(buffers);
+            count = 0;
+        }
+
+    }
+    empin.close();
+
     //Creating the EmpSorted.csv file where we will store our sorted results
     fstream SortOut;
     SortOut.open("EmpSorted.csv", ios::out | ios::app);
-
-    //1. Create runs for Emp which are sorted using Sort_Buffer()
-
-
-    //2. Use Merge_Runs() to Sort the runs of Emp relations 
-
-
-    //Please delete the temporary files (runs) after you've sorted the Emp.csv
+    SortOut.close();
 
     return 0;
 }
