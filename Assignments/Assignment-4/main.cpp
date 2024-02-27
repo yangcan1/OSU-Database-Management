@@ -31,18 +31,29 @@ bool compareByID(const Records& a, const Records& b) {
 //PASS 1
 //Sorting the buffers in main_memory and storing the sorted records into a temporary file (Runs) 
 void Sort_Buffer(Records buffers[buffer_size]){
+    if (flag == 399) {
+        sort(buffers, buffers + 3, compareByID);
+        string filename = "runs18.txt";
+        fstream runs;
+        runs.open(filename, ios::in| ios::out | ios::app);
+        for (int i = 0; i < 3; i++) {
+            runs << buffers[i].emp_record.eid << "," << buffers[i].emp_record.ename << "," << buffers[i].emp_record.age << "," << buffers[i].emp_record.salary << "\n";
+        }
+        runs.close();
+        run++;
+        return;
+    }
     sort(buffers, buffers + buffer_size, compareByID);
     // for (int i = 0; i < buffer_size; i++) {
     //     cout << "i: eID: " << i << ":" << buffers[i].emp_record.eid << "\n";
     // }
     string filename = "runs" + to_string(run) + ".txt";
-    ofstream runs;
-    runs.open(filename, ios::out | ios::app);
+    fstream runs;
+    runs.open(filename, ios::in| ios::out | ios::app);
     for (int i = 0; i < buffer_size; i++) {
         runs << buffers[i].emp_record.eid << "," << buffers[i].emp_record.ename << "," << buffers[i].emp_record.age << "," << buffers[i].emp_record.salary << "\n";
     }
     runs.close();
-    
     run++;
 
     return;
@@ -75,7 +86,6 @@ int main() {
             Sort_Buffer(buffers);
             count = 0;
         }
-
     }
     empin.close();
 
