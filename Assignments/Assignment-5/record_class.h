@@ -3,7 +3,13 @@
 /* This record_class.h contains the class Records, which can be used to store tuples form Emp.csv (stored
 in the EmpRecords) and Dept.csv (Stored in DeptRecords) files.
 */
-#include <bits/stdc++.h>
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <bitset>
+#include <fstream>
 
 using namespace std;
 

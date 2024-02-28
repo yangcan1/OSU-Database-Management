@@ -1,7 +1,13 @@
 /* This is a skeleton code for Optimized Merge Sort, you can make modifications as long as you meet 
    all question requirements*/  
 
-#include <bits/stdc++.h>
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <bitset>
+#include <fstream>
 #include "record_class.h"
 
 using namespace std;
