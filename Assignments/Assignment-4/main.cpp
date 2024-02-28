@@ -108,9 +108,6 @@ void Merge_Runs() {
     for (int i = 0; i < run; ++i) {
         runFiles[i].close();
     }
-
-    // Close output file
-    SortOut.close();
 }
 
 
