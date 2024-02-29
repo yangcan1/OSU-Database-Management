@@ -8,29 +8,58 @@
 #include <string>
 #include <bitset>
 #include <fstream>
+#include <stdio.h>
+
 #include "record_class.h"
 
 using namespace std;
 
-//defines how many blocks are available in the Main Memory 
 #define buffer_size 22
+EmpRecord EmpBuffer1[buffer_size];
+EmpRecord EmpBuffer2[buffer_size];
+DeptRecord DeptBuffer[buffer_size];
 
-Records buffers[buffer_size]; //use this class object of size 22 as your main memory
+bool compareEmp(const EmpRecord& a, const EmpRecord& b) {
+    return a.eid < b.eid;
+}
 
-/***You can change return type and arguments as you want.***/
+bool compareDept(const DeptRecord& a, const DeptRecord& b) {
+    return a.managerid < b.managerid;
+}
 
 //Sorting the buffers in main_memory and storing the sorted records into a temporary file (runs) 
-void Sort_Buffer(){
-    //Remember: You can use only [AT MOST] 22 blocks for sorting the records / tuples and create the runs
-    return;
+void Sort_Buffer(string filename, int size, string sortBy) {
+    if (filename == "empRun1.csv") {
+        sort(EmpBuffer1, EmpBuffer1 + size, compareEmp);
+        fstream empout;
+        empout.open(filename, ios::out | ios::app);
+        for (int i = 0; i < size; i++) {
+            empout << EmpBuffer1[i].eid << "," << EmpBuffer1[i].ename << "," << EmpBuffer1[i].age << "," << EmpBuffer1[i].salary << endl;
+        }
+        empout.close();
+    }
+    else if (filename == "empRun2.csv") {
+        sort(EmpBuffer2, EmpBuffer2 + size, compareEmp);
+        fstream empout;
+        empout.open(filename, ios::out | ios::app);
+        for (int i = 0; i < size; i++) {
+            empout << EmpBuffer2[i].eid << "," << EmpBuffer2[i].ename << "," << EmpBuffer2[i].age << "," << EmpBuffer2[i].salary << endl;
+        }
+        empout.close();
+    }
+    else if (filename == "deptRun.csv") {
+        sort(DeptBuffer, DeptBuffer + size, compareDept);
+        fstream deptout;
+        deptout.open(filename, ios::out | ios::app);
+        for (int i = 0; i < size; i++) {
+            deptout << DeptBuffer[i].did << "," << DeptBuffer[i].dname << "," << DeptBuffer[i].budget << "," << DeptBuffer[i].managerid << endl;
+        }
+        deptout.close();
+    }
+
 }
 
-//Prints out the attributes from empRecord and deptRecord when a join condition is met 
-//and puts it in file Join.csv
-void PrintJoin() {
-    
-    return;
-}
+
 
 //Use main memory to Merge and Join tuples 
 //which are already sorted in 'runs' of the relations Dept and Emp 
@@ -42,25 +71,37 @@ void Merge_Join_Runs(){
 }
 
 int main() {
-
-    //Open file streams to read and write
-    //Opening out two relations Emp.csv and Dept.csv which we want to join
     fstream empin;
     fstream deptin;
     empin.open("Emp.csv", ios::in);
     deptin.open("Dept.csv", ios::in);
-   
-    //Creating the Join.csv file where we will store our joined results
+    EmpRecord emp;
+    DeptRecord dept;
+    string empin_str;
+    string deptin_str;
+    removeTempFiles();
+    for (int i = 0; i < buffer_size; i++) {
+        getline(empin, empin_str);
+        emp = Grab_Emp_Record(empin_str);
+        EmpBuffer1[i] = emp;
+    }
+    for (int i = 0; i < 8; i++) {
+        getline(empin, empin_str);
+        emp = Grab_Emp_Record(empin_str);
+        EmpBuffer2[i] = emp;
+    }
+    for (int i = 0; i < buffer_size; i++) {
+        getline(deptin, deptin_str);
+        dept = Grab_Dept_Record(deptin_str);
+        DeptBuffer[i] = dept;
+    }
+    Sort_Buffer("empRun1.csv", 22, "eid");
+    Sort_Buffer("empRun2.csv", 8, "eid");
+    Sort_Buffer("deptRun.csv", 15, "managerid");
+    
     fstream joinout;
     joinout.open("Join.csv", ios::out | ios::app);
 
-    //1. Create runs for Dept and Emp which are sorted using Sort_Buffer()
-
-
-    //2. Use Merge_Join_Runs() to Join the runs of Dept and Emp relations 
-
-
-    //Please delete the temporary files (runs) after you've joined both Emp.csv and Dept.csv
 
     return 0;
 }
