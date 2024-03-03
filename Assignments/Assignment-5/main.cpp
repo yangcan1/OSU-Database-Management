@@ -59,15 +59,33 @@ void Sort_Buffer(string filename, int size, string sortBy) {
 
 }
 
-
-
-//Use main memory to Merge and Join tuples 
-//which are already sorted in 'runs' of the relations Dept and Emp 
 void Merge_Join_Runs(){
-   
-
-    //and store the Joined new tuples using PrintJoin() 
-    return;
+    fstream joinout;
+    joinout.open("Join.csv", ios::out | ios::app);
+    int i=0,j=0, k=0;
+    while (i<15)
+    {
+        if (DeptBuffer[i].managerid == EmpBuffer1[j].eid || DeptBuffer[i].managerid == EmpBuffer2[k].eid) {
+            joinout << DeptBuffer[i].did << "," << DeptBuffer[i].dname << "," << DeptBuffer[i].budget << "," << DeptBuffer[i].managerid << "," << EmpBuffer1[j].eid << "," << EmpBuffer1[j].ename << "," << EmpBuffer1[j].age << "," << EmpBuffer1[j].salary << endl;
+            i++;
+            j++;
+            continue;
+        }
+        for (int l = 0; l < 22; l++) {
+            if (DeptBuffer[i].managerid == EmpBuffer1[l].eid) {
+                joinout << DeptBuffer[i].did << "," << DeptBuffer[i].dname << "," << DeptBuffer[i].budget << "," << DeptBuffer[i].managerid << "," << EmpBuffer1[l].eid << "," << EmpBuffer1[l].ename << "," << EmpBuffer1[l].age << "," << EmpBuffer1[l].salary << endl;
+                i++;
+                break;
+            }
+        }
+        for (int l = 0; l < 22; l++) {
+            if (DeptBuffer[i].managerid == EmpBuffer2[l].eid) {
+                joinout << DeptBuffer[i].did << "," << DeptBuffer[i].dname << "," << DeptBuffer[i].budget << "," << DeptBuffer[i].managerid << "," << EmpBuffer2[l].eid << "," << EmpBuffer2[l].ename << "," << EmpBuffer2[l].age << "," << EmpBuffer2[l].salary << endl;
+                i++;
+                break;
+            }
+        }
+    }
 }
 
 int main() {
@@ -98,9 +116,15 @@ int main() {
     Sort_Buffer("empRun1.csv", 22, "eid");
     Sort_Buffer("empRun2.csv", 8, "eid");
     Sort_Buffer("deptRun.csv", 15, "managerid");
+    empin.close();
+    deptin.close();
+
+    Merge_Join_Runs();
+
+    remove("empRun1.csv");
+    remove("empRun2.csv");
+    remove("deptRun.csv");
     
-    fstream joinout;
-    joinout.open("Join.csv", ios::out | ios::app);
 
 
     return 0;
